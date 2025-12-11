@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-// SETUP DASAR
+// Setup dasar
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x79a6d2); 
 scene.fog = new THREE.Fog(0x79a6d2, 8, 30);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 
-// POSISI START: DARI PINTU
+// Posisi START dari pintu
 camera.position.set(0, 1.6, 4.0); 
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -25,7 +25,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.target.set(0, 1.5, -2.0); 
 
-// CONTROLS: GHOST MODE
+// Controls
 controls.listenToKeyEvents(window); 
 controls.keyPanSpeed = 20.0; 
 controls.enablePan = true; 
@@ -34,7 +34,7 @@ controls.maxDistance = 15.0;
 controls.maxPolarAngle = Math.PI - 0.1; 
 controls.minPolarAngle = 0.1; 
 
-// 2. ARSITEKTUR & MATERIAL
+// Arsitektur & Material
 const W = 8;   
 const D = 10; 
 const H = 4.5; 
@@ -94,7 +94,7 @@ const caligraphyMat = new THREE.MeshStandardMaterial({
     emissiveIntensity: 0.2    
 });
 
-// 3. BANGUN STRUKTUR RUANGAN
+// Bangun Struktur Ruangan
 // Lantai
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), carpetMat);
 floor.rotation.x = -Math.PI / 2;
@@ -121,7 +121,7 @@ createBeam(new THREE.BoxGeometry(W, 0.2, 0.2), 0, D/2);  
 createBeam(new THREE.BoxGeometry(0.2, 0.2, D), -W/2, 0); 
 createBeam(new THREE.BoxGeometry(0.2, 0.2, D), W/2, 0);  
 
-// ATAP LIMAS
+// atap limas
 const roofGeo = new THREE.ConeGeometry(W * 0.85, ROOF_H, 4, 1, true);
 const roof = new THREE.Mesh(roofGeo, woodRoofMat);
 roof.position.set(0, H + (ROOF_H/2), 0);
@@ -129,7 +129,7 @@ roof.rotation.y = Math.PI / 4;
 roof.receiveShadow = true;
 scene.add(roof);
 
-// GARIS PENJELAS ATAp
+// Garis Penjelas atap
 const lineMat = new THREE.LineBasicMaterial({ color: 0xffeebb, linewidth: 2 });
 const edges = new THREE.EdgesGeometry(roofGeo);
 const roofLines = new THREE.LineSegments(edges, lineMat);
@@ -142,28 +142,28 @@ const capLines = new THREE.LineSegments(new THREE.EdgesGeometry(capGeo), lineMat
 capLines.position.set(0, (ROOF_H / 2) - 0.001, 0);
 roof.add(capLines);
 
-// DINDING SAMPING (1/3 KAYU + ORNAMEN GOLD, 2/3 KACA)
+// Dinding samping (1/3 kayu + ornamen gold, 2/3 kaca)
 const frontLen = D / 3;       
 const backLen = (D / 3) * 2;  
 
-// 1. Dinding Dasar Kayu
+// dinding dasar kayu
 const woodPartGeo = new THREE.PlaneGeometry(frontLen, H);
 
-// 2. Panel Ornamen Kaligrafi
+// ornamen kaligrafi
 const ornamentW = frontLen - 0.4; 
 const ornamentH = H - 0.8;        
 const caligraphyPartGeo = new THREE.PlaneGeometry(ornamentW, ornamentH);
 
 // Fungsi bikin dinding samping
 const createSideWall = (xPos, rotY) => {
-    // 1. Dinding Kayu (Depan)
+    // dinding kayu (depan)
     const woodPart = new THREE.Mesh(woodPartGeo, backWallMat); 
     woodPart.position.set(xPos, H/2, -D/2 + frontLen/2);
     woodPart.rotation.y = rotY;
     woodPart.receiveShadow = true;
     scene.add(woodPart);
 
-    // 2. Tempelan Kaligrafi Emas
+    // 2. tempelan kaligrafi gold
     const caligraphyPart = new THREE.Mesh(caligraphyPartGeo, caligraphyMat);
     const offset = xPos > 0 ? -0.01 : 0.01; 
     caligraphyPart.position.set(xPos + offset, H/2, -D/2 + frontLen/2); 
@@ -175,13 +175,13 @@ const createSideWall = (xPos, rotY) => {
 createSideWall(-W/2, Math.PI / 2);
 createSideWall(W/2, -Math.PI / 2);
 
-// TEMBOK DEPAN (BELAKANG MIHRAB) KAYU
+// Tembok depan (belakang mihrab) kayu
 const frontWallBacking = new THREE.Mesh(new THREE.PlaneGeometry(W, H), backWallMat);
 frontWallBacking.position.set(0, H/2, -D/2); 
 frontWallBacking.receiveShadow = true;
 scene.add(frontWallBacking);
 
-// 4. LOAD ASSETS
+// Load asset
 function loadModel(filename, pos, scale, rotY = 0) {
     gltfLoader.load(`./assets/models/${filename}`, (gltf) => {
         const model = gltf.scene;
@@ -216,62 +216,62 @@ function loadModel(filename, pos, scale, rotY = 0) {
     }, undefined, (e) => console.error(`Gagal load ${filename}:`, e));
 }
 
-// MIHRAB
+// Mihrab
 loadModel('mihrabfix.glb', {x: 0, y: 0, z: -4.8}, 1.5, Math.PI); 
 
-// PINTU (BELAKANG)
+// Pintu
 loadModel('pintu.glb', {x: 0, y: 0, z: 5.0}, {x: 2.2, y: 2.0, z: 1.0}, Math.PI); 
 
-// JENDELA KANAN & KIRI (LURUS & SEJAJAR)
+// Jendela kanan & kiri
 const winScaleVal = 1.9; 
 const winY = -0.1; 
 
-// KIRI (X = -4.0)
+// kiri (X = -4.0)
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: -0.53}, winScaleVal, Math.PI/2);
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: 0.8}, winScaleVal, Math.PI/2);
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: 2.5}, winScaleVal, Math.PI/2);
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: 4.2}, winScaleVal, Math.PI/2);
 
-// KANAN (X = 4.0)
+// kanan (X = 4.0)
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: -0.53}, winScaleVal, -Math.PI/2);
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: 0.8}, winScaleVal, -Math.PI/2);
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: 2.5}, winScaleVal, -Math.PI/2);
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: 4.2}, winScaleVal, -Math.PI/2);
 
-// TIANG UTAMA (TIANG.GLB) DI 4 SUDUT (OFFSET KE DALAM)
+// Tiang besar di 4 sudut (offset ke dalam)
 // menentukan jarak "mundur" dari tembok
 const margin = 0.6; 
-const posX = (W / 2) - margin; // Posisi X agak ke dalam
-const posZ = (D / 2) - margin; // Posisi Z agak ke dalam
+const posX = (W / 2) - margin; // posisi X agak ke dalam
+const posZ = (D / 2) - margin; // posisi Z agak ke dalam
 const scaleTiang = 1.25; 
 
-// 1. Depan Kiri (Dekat Mihrab)
+// depan kiri (dekat mihrab)
 loadModel('tiang.glb', {x: -2.50, y: 0.0, z: -3.30}, scaleTiang);
 
-// 2. Depan Kanan (Dekat Mihrab)
+// depan kanan (dekat mihrab)
 loadModel('tiang.glb', {x: 2.50, y: 0.0, z: -3.30}, scaleTiang);
 
-// 3. Belakang Kiri (Dekat Pintu Masuk)
+// belakang kiri (dekat pintu masuk)
 loadModel('tiang.glb', {x: -2.50, y: 0.0, z: 3.30}, scaleTiang);
 
-// 4. Belakang Kanan (Dekat Pintu Masuk)
+// belakang kanan (dekat pintu masuk)
 loadModel('tiang.glb', {x: 2.50, y: 0.0, z: 3.30}, scaleTiang);
 
-// BALOK ATAS DI 4 SISI
+// Balok atas di 4 sisi
 const beamY = H + -1.30;
 const offset = 1.50;
+const SCALE_X_SAMPING = D/4; 
+const SCALE_X_DEPAN = W/4;    
 
-// Balok Atas Samping (Kiri & Kanan)
-// Skala panjang baru: (D/2) / 2 = D/4
-loadModel('balokatass.glb', {x: -W/2 + offset, y: beamY, z: 0}, {x: D/4, y: 1.0, z: 1.0}, Math.PI/2); // Kiri 
-loadModel('balokatass.glb', {x: W/2 - offset, y: beamY, z: 0}, {x: D/4, y: 1.0, z: 1.0}, -Math.PI/2); // Kanan 
+// balok atas samping (kiri & kanan)
+loadModel('balokatass.glb', {x: -W/2 + offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, Math.PI/2); // Kiri 
+loadModel('balokatass.glb', {x: W/2 - offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, -Math.PI/2); // Kanan 
 
-// Balok Atas Depan & Belakang
-// Skala panjang baru: (W/2) / 2 = W/4
-loadModel('balokatass.glb', {x: 0, y: beamY, z: -D/2 + offset}, {x: W/4, y: 1.0, z: 1.0}, Math.PI); // Depan 
-loadModel('balokatass.glb', {x: 0, y: beamY, z: D/2 - offset}, {x: W/4, y: 1.0, z: 1.0}, 0); // Belakang
+// balok atas depan & belakang
+loadModel('balokatass.glb', {x: 0, y: beamY, z: -D/2 + offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, Math.PI); // Depan 
+loadModel('balokatass.glb', {x: 0, y: beamY, z: D/2 - offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, 0); // Belakang
 
-// LAMPU GANTUNG
+// Lampu gantung
 const LAMP_Y = 3.5;
 loadModel('lampu gantunggg.glb', {x: 0, y: LAMP_Y, z: 0}, 0.6); 
 
@@ -282,7 +282,7 @@ const cable = new THREE.Mesh(cableGeo, cableMat);
 cable.position.set(0, LAMP_Y + (cableLength / 2), 0);
 scene.add(cable);
 
-// ASET LAINNYA
+// Aset lainnya
 loadModel('sekat.glb', {x: -1.80, y: 0.01, z: 0}, 1.0, 0); 
 loadModel('mejangaji.glb', {x: -1.5, y: 0.0, z: -3.5}, 0.5, Math.PI); 
 loadModel('mic.glb', {x: 2.0, y: 0, z: -4.0}, 1); 
@@ -293,7 +293,7 @@ loadModel('kipasangin.gltf', {x: -2.5, y: H + 0.2, z: 0}, 1.0);
 loadModel('kipasangin.gltf', {x: 2.5, y: H + 0.2, z: 0}, 1.0);
 loadModel('kotakamal.glb', {x: 2.50, y: -0.6, z: 4.20}, 3.50, Math.PI/2);
 
-// 5. RENDER & ANIMATE
+// Render & animate
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
@@ -302,15 +302,41 @@ sunLight.position.set(5, 10, 5);
 sunLight.castShadow = true;
 scene.add(sunLight);
 
-const lampLight = new THREE.PointLight(0xffaa00, 1.5, 10);
-lampLight.position.set(0, LAMP_Y - 0.2, -0.5); 
+// PointLight di posisi LAMP_Y (3.5)
+const lampLight = new THREE.PointLight(0xffaa00, 2.0, 10); // intensitas di 2.0
+lampLight.position.set(0, LAMP_Y, 0); 
 scene.add(lampLight);
+
+// status lampu
+let isLampOn = true; 
+const AMBIENT_INTENSITY_ON = 0.7;
+const AMBIENT_INTENSITY_OFF = 0.1; // diturunkan agar seperti gelap
+const POINT_INTENSITY_ON = 2.0;
+const POINT_INTENSITY_OFF = 0.0;
+
+// Tombol 'L' (toggle light)
+window.addEventListener('keydown', (event) => {
+    if (event.key.toUpperCase() === 'L') {
+        isLampOn = !isLampOn;
+        console.log(`Lampu di-toggle. Status: ${isLampOn ? 'ON' : 'OFF'}`);
+    }
+});
+
 
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
 
-    // TEMBOK
+    // Toggle lampu
+    if (isLampOn) {
+        ambientLight.intensity = AMBIENT_INTENSITY_ON;
+        lampLight.intensity = POINT_INTENSITY_ON;
+    } else {
+        ambientLight.intensity = AMBIENT_INTENSITY_OFF;
+        lampLight.intensity = POINT_INTENSITY_OFF;
+    }
+
+    // Tembok
     if (camera.position.x > 3.9) camera.position.x = 3.9;
     if (camera.position.x < -3.9) camera.position.x = -3.9;
     if (camera.position.z > 4.9) camera.position.z = 4.9; 

@@ -7,4 +7,5 @@ Anggota Kelompok:
   - Annisa Salma Riavinola       5025231312
 
 **Deskripsi**
-  "3D Musala InteraktIF " adalah aplikasi berbasis web yang menampilkan simulasi 3D realistik dari Musala Teknik Informatika. Aplikasi ini dibangun menggunakan pustaka Three.js (WebGL) dengan fitur utama meliputi rendering objek arsitektural detail, pencahayaan dinamis (lighting), dan tekstur material (PBR materials). Pengguna dapat menjelajahi ruangan secara bebas dengan batasan kamera. 
+  
+"3D Musala InteraktIF " adalah aplikasi berbasis web yang menampilkan simulasi 3D realistik dari Musala Teknik Informatika. Aplikasi ini dibangun menggunakan pustaka Three.js (WebGL) dengan fitur utama meliputi rendering objek arsitektural detail, pencahayaan dinamis (lighting), dan tekstur material (PBR materials). Pengguna dapat menjelajahi ruangan secara bebas dengan batasan kamera. 

@@ -1,10 +1,10 @@
 **3D Musala InteraktIF**
 
 Anggota Kelompok:
-  - Thalyta Vius Pramesti        5025231055
-  - Dinda Ayu Ningratu Putri     5025231059
-  - Kalistania Casey             5025231302
-  - Annisa Salma Riavinola       5025231312
+  - Thalyta Vius Pramesti        (5025231055)
+  - Dinda Ayu Ningratu Putri     (5025231059)
+  - Kalistania Casey             (5025231302)
+  - Annisa Salma Riavinola       (5025231312)
 
 **Deskripsi**
   

@@ -9,7 +9,7 @@ scene.fog = new THREE.Fog(0x79a6d2, 8, 30);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 
-// Posisi START dari pintu
+// Posisi start view dari pintu
 camera.position.set(0, 1.6, 4.0); 
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,13 +32,21 @@ controls.enablePan = true;
 controls.minDistance = 0.1; 
 controls.maxDistance = 15.0; 
 controls.maxPolarAngle = Math.PI - 0.1; 
-controls.minPolarAngle = 0.1; 
 
-// Arsitektur & Material
-const W = 8;   
+controls.minPolarAngle = Math.PI / 6.0; 
+
+// Arsitektur & material
+const W = 8;   
 const D = 10; 
 const H = 4.5; 
 const ROOF_H = 3.0; 
+
+const Y_MAX_CAMERA_FIX = 4.2;    // tinggi maksimal kamera
+const TARGET_Y_LIMIT_FIX = 4.2;  // tinggi maksimal target panning
+
+const TARGET_X_LIMIT = (W/2) - 1.0;
+const TARGET_Z_LIMIT = (D/2) - 1.0;
+
 
 const textureLoader = new THREE.TextureLoader();
 const gltfLoader = new GLTFLoader();
@@ -84,17 +92,17 @@ const patternMat = new THREE.MeshBasicMaterial({ map: patternTex, transparent: t
 const cableMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.5, roughness: 0.5 });
 
 const caligraphyMat = new THREE.MeshStandardMaterial({ 
-    map: caligraphyTex,       
-    color: 0xffd700,          
-    metalness: 1.0,           
-    roughness: 0.15,          
-    transparent: true,        
-    side: THREE.DoubleSide,
-    emissive: 0xffd700,       
-    emissiveIntensity: 0.2    
+    map: caligraphyTex,       
+    color: 0xffd700,          
+    metalness: 1.0,           
+    roughness: 0.15,          
+    transparent: true,        
+    side: THREE.DoubleSide,
+    emissive: 0xffd700,       
+    emissiveIntensity: 0.2    
 });
 
-// Bangun Struktur Ruangan
+// Bangun struktur ruangan
 // Lantai
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), carpetMat);
 floor.rotation.x = -Math.PI / 2;
@@ -104,22 +112,22 @@ scene.add(floor);
 // Pilar
 const pilarGeo = new THREE.BoxGeometry(0.35, H, 0.35);
 [[-W/2, -D/2], [W/2, -D/2], [-W/2, D/2], [W/2, D/2]].forEach(pos => {
-    const pilar = new THREE.Mesh(pilarGeo, woodDarkMat);
-    pilar.position.set(pos[0], H/2, pos[1]);
-    pilar.castShadow = true;
-    scene.add(pilar);
+    const pilar = new THREE.Mesh(pilarGeo, woodDarkMat);
+    pilar.position.set(pos[0], H/2, pos[1]);
+    pilar.castShadow = true;
+    scene.add(pilar);
 });
 
 const createBeam = (geo, x, z, rotY=0) => {
-    const beam = new THREE.Mesh(geo, woodDarkMat);
-    beam.position.set(x, H, z);
-    beam.rotation.y = rotY;
-    scene.add(beam);
+    const beam = new THREE.Mesh(geo, woodDarkMat);
+    beam.position.set(x, H, z);
+    beam.rotation.y = rotY;
+    scene.add(beam);
 };
 createBeam(new THREE.BoxGeometry(W, 0.2, 0.2), 0, -D/2); 
-createBeam(new THREE.BoxGeometry(W, 0.2, 0.2), 0, D/2);  
+createBeam(new THREE.BoxGeometry(W, 0.2, 0.2), 0, D/2);  
 createBeam(new THREE.BoxGeometry(0.2, 0.2, D), -W/2, 0); 
-createBeam(new THREE.BoxGeometry(0.2, 0.2, D), W/2, 0);  
+createBeam(new THREE.BoxGeometry(0.2, 0.2, D), W/2, 0);  
 
 // atap limas
 const roofGeo = new THREE.ConeGeometry(W * 0.85, ROOF_H, 4, 1, true);
@@ -129,7 +137,7 @@ roof.rotation.y = Math.PI / 4;
 roof.receiveShadow = true;
 scene.add(roof);
 
-// Garis Penjelas atap
+// Garis penjelas atap
 const lineMat = new THREE.LineBasicMaterial({ color: 0xffeebb, linewidth: 2 });
 const edges = new THREE.EdgesGeometry(roofGeo);
 const roofLines = new THREE.LineSegments(edges, lineMat);
@@ -143,32 +151,32 @@ capLines.position.set(0, (ROOF_H / 2) - 0.001, 0);
 roof.add(capLines);
 
 // Dinding samping (1/3 kayu + ornamen gold, 2/3 kaca)
-const frontLen = D / 3;       
-const backLen = (D / 3) * 2;  
+const frontLen = D / 3;       
+const backLen = (D / 3) * 2;  
 
 // dinding dasar kayu
 const woodPartGeo = new THREE.PlaneGeometry(frontLen, H);
 
 // ornamen kaligrafi
 const ornamentW = frontLen - 0.4; 
-const ornamentH = H - 0.8;        
+const ornamentH = H - 0.8;        
 const caligraphyPartGeo = new THREE.PlaneGeometry(ornamentW, ornamentH);
 
 // Fungsi bikin dinding samping
 const createSideWall = (xPos, rotY) => {
-    // dinding kayu (depan)
-    const woodPart = new THREE.Mesh(woodPartGeo, backWallMat); 
-    woodPart.position.set(xPos, H/2, -D/2 + frontLen/2);
-    woodPart.rotation.y = rotY;
-    woodPart.receiveShadow = true;
-    scene.add(woodPart);
+    // dinding kayu (depan)
+    const woodPart = new THREE.Mesh(woodPartGeo, backWallMat); 
+    woodPart.position.set(xPos, H/2, -D/2 + frontLen/2);
+    woodPart.rotation.y = rotY;
+    woodPart.receiveShadow = true;
+    scene.add(woodPart);
 
-    // 2. tempelan kaligrafi gold
-    const caligraphyPart = new THREE.Mesh(caligraphyPartGeo, caligraphyMat);
-    const offset = xPos > 0 ? -0.01 : 0.01; 
-    caligraphyPart.position.set(xPos + offset, H/2, -D/2 + frontLen/2); 
-    caligraphyPart.rotation.y = rotY;
-    scene.add(caligraphyPart);
+    // 2. tempelan kaligrafi gold
+    const caligraphyPart = new THREE.Mesh(caligraphyPartGeo, caligraphyMat);
+    const offset = xPos > 0 ? -0.01 : 0.01; 
+    caligraphyPart.position.set(xPos + offset, H/2, -D/2 + frontLen/2); 
+    caligraphyPart.rotation.y = rotY;
+    scene.add(caligraphyPart);
 
 };
 
@@ -183,37 +191,38 @@ scene.add(frontWallBacking);
 
 // Load asset
 function loadModel(filename, pos, scale, rotY = 0) {
-    gltfLoader.load(`./assets/models/${filename}`, (gltf) => {
-        const model = gltf.scene;
-        model.position.set(pos.x, pos.y, pos.z);
-        // Scale handling
-        if (typeof scale === 'number') {
-            model.scale.set(scale, scale, scale);
-        } else {
-            model.scale.set(scale.x, scale.y, scale.z);
-        }
-        
-        model.rotation.y = rotY;
-        
-        model.traverse((node) => {
-            if (node.isMesh) {
-                node.castShadow = true;
-                node.receiveShadow = true;
-                
-                if (filename === 'bismillahbisaa.glb' && node.material) {
-                    node.material.color.set(0xCCCCCC);
-                    node.material.metalness = 0.1;
-                }
+    gltfLoader.load(`./assets/models/${filename}`, (gltf) => {
+        const model = gltf.scene;
+        model.position.set(pos.x, pos.y, pos.z);
+        // Scale handling
+        if (typeof scale === 'number') {
+            model.scale.set(scale, scale, scale);
+        } else {
+            model.scale.set(scale.x, scale.y, scale.z);
+        }
+        
+        model.rotation.y = rotY;
+        
+        model.traverse((node) => {
+            if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+                
+                if (filename === 'bismillahbisaa.glb' && node.material) {
+                    node.material.color.set(0xffffff);
+                    node.material.metalness = 0.4;     
+                    node.material.roughness = 0.2;
+                }
 
-                if (filename === 'etalase2.glb' && node.material) {
-                    node.material.color.set(0xffffff); 
-                    node.material.metalness = 0.4;     
-                    node.material.roughness = 0.2;     
-                }
-            }
-        });
-        scene.add(model);
-    }, undefined, (e) => console.error(`Gagal load ${filename}:`, e));
+                if (filename === 'etalase2.glb' && node.material) {
+                    node.material.color.set(0xffffff); 
+                    node.material.metalness = 0.4;     
+                    node.material.roughness = 0.2;     
+                }
+            }
+        });
+        scene.add(model);
+    }, undefined, (e) => console.error(`Gagal load ${filename}:`, e));
 }
 
 // Mihrab
@@ -226,68 +235,67 @@ loadModel('pintu.glb', {x: 0, y: 0, z: 5.0}, {x: 2.2, y: 2.0, z: 1.0}, Math.PI);
 const winScaleVal = 1.9; 
 const winY = -0.1; 
 
-// kiri (X = -4.0)
+// kiri
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: -0.53}, winScaleVal, Math.PI/2);
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: 0.8}, winScaleVal, Math.PI/2);
 loadModel('jendela2.glb', {x: -4.0, y: winY, z: 2.5}, winScaleVal, Math.PI/2);
-loadModel('jendela2.glb', {x: -4.0, y: winY, z: 4.2}, winScaleVal, Math.PI/2);
+loadModel('jendela2.glb', {x: -4.0, y: winY, z: 4.0}, winScaleVal, Math.PI/2);
 
-// kanan (X = 4.0)
+// kanan
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: -0.53}, winScaleVal, -Math.PI/2);
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: 0.8}, winScaleVal, -Math.PI/2);
 loadModel('jendela2.glb', {x: 4.0, y: winY, z: 2.5}, winScaleVal, -Math.PI/2);
-loadModel('jendela2.glb', {x: 4.0, y: winY, z: 4.2}, winScaleVal, -Math.PI/2);
+loadModel('jendela2.glb', {x: 4.0, y: winY, z: 4.0}, winScaleVal, -Math.PI/2);
 
 // Tiang besar di 4 sudut (offset ke dalam)
-// menentukan jarak "mundur" dari tembok
 const margin = 0.6; 
 const posX = (W / 2) - margin; // posisi X agak ke dalam
 const posZ = (D / 2) - margin; // posisi Z agak ke dalam
 const scaleTiang = 1.25; 
 
-// depan kiri (dekat mihrab)
+// depan kiri
 loadModel('tiang.glb', {x: -2.50, y: 0.0, z: -3.30}, scaleTiang);
 
-// depan kanan (dekat mihrab)
+// depan kanan
 loadModel('tiang.glb', {x: 2.50, y: 0.0, z: -3.30}, scaleTiang);
 
-// belakang kiri (dekat pintu masuk)
+// belakang kiri
 loadModel('tiang.glb', {x: -2.50, y: 0.0, z: 3.30}, scaleTiang);
 
-// belakang kanan (dekat pintu masuk)
+// belakang kanan
 loadModel('tiang.glb', {x: 2.50, y: 0.0, z: 3.30}, scaleTiang);
 
 // Balok atas di 4 sisi
 const beamY = H + -1.30;
 const offset = 1.50;
 const SCALE_X_SAMPING = D/4; 
-const SCALE_X_DEPAN = W/4;    
+const SCALE_X_DEPAN = W/4;    
 
 // balok atas samping (kiri & kanan)
-loadModel('balokatass.glb', {x: -W/2 + offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, Math.PI/2); // Kiri 
-loadModel('balokatass.glb', {x: W/2 - offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, -Math.PI/2); // Kanan 
+loadModel('balokatass.glb', {x: -W/2 + offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, Math.PI/2); // kiri 
+loadModel('balokatass.glb', {x: W/2 - offset, y: beamY, z: 0}, {x: SCALE_X_SAMPING, y: 1.0, z: 1.0}, -Math.PI/2); // kanan 
 
 // balok atas depan & belakang
-loadModel('balokatass.glb', {x: 0, y: beamY, z: -D/2 + offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, Math.PI); // Depan 
-loadModel('balokatass.glb', {x: 0, y: beamY, z: D/2 - offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, 0); // Belakang
+loadModel('balokatass.glb', {x: 0, y: beamY, z: -D/2 + offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, Math.PI); // depan 
+loadModel('balokatass.glb', {x: 0, y: beamY, z: D/2 - offset}, {x: SCALE_X_DEPAN, y: 1.0, z: 1.0}, 0); // belakang
 
 // Kipas
 const NAIK_OFFSET_FAN = 1.60; 
 
 // Kipas1
 const FAN_Y_1 = beamY + NAIK_OFFSET_FAN; 
-const FAN_Z_1 = -1.5;                  
+const FAN_Z_1 = -1.5;                  
 
-loadModel('kipasfix.glb', { x: -W/2 + 1.85, y: FAN_Y_1, z: FAN_Z_1 }, 1.8, Math.PI / 2); //kiri
-loadModel('kipasfix.glb', { x: W/2 - 1.85, y: FAN_Y_1, z: FAN_Z_1 }, 1.8, -Math.PI / 2); //kanan
+loadModel('kipasfix.glb', { x: -W/2 + 1.85, y: FAN_Y_1, z: FAN_Z_1 }, 2.1, Math.PI / 2); //kiri
+loadModel('kipasfix.glb', { x: W/2 - 1.85, y: FAN_Y_1, z: FAN_Z_1 }, 2.1, -Math.PI / 2); //kanan
 
 // Kipas2
 const FAN_Y_2 = beamY + NAIK_OFFSET_FAN;
 const FAN_Z_2 = 1.5;
 
-loadModel('kipasfix.glb', { x: -W/2 + 1.85, y: FAN_Y_2, z: FAN_Z_2 }, 1.8, Math.PI / 2); // kiri
-loadModel('kipasfix.glb', { x: W/2 - 1.85, y: FAN_Y_2, z: FAN_Z_2 }, 1.8, -Math.PI / 2); // kanan
-  
+loadModel('kipasfix.glb', { x: -W/2 + 1.85, y: FAN_Y_2, z: FAN_Z_2 }, 2.1, Math.PI / 2); // kiri
+loadModel('kipasfix.glb', { x: W/2 - 1.85, y: FAN_Y_2, z: FAN_Z_2 }, 2.1, -Math.PI / 2); // kanan
+  
 // Speaker
 const FRONT_BALOK_Z = -D/2 + offset; 
 const MUNDUR_OFFSET_SPEAKER = 0.60;
@@ -296,12 +304,11 @@ const SPEAKER_Y = beamY;
 const SPEAKER_Z = FRONT_BALOK_Z + MUNDUR_OFFSET_SPEAKER;
 
 loadModel('speaker.glb', { x: -1.6, y: SPEAKER_Y, z: SPEAKER_Z }, 1.25, 0);
-loadModel('speaker.glb', { x:  1.6, y: SPEAKER_Y, z: SPEAKER_Z }, 1.25, 0);
+loadModel('speaker.glb', { x:  1.6, y: SPEAKER_Y, z: SPEAKER_Z }, 1.25, 0);
 
 // CCTV
 const NAIK_OFFSET_CCTV = 1.60; 
-loadModel('cctv.glb', { x: -W/2 + 2.5, y: H - 0.02, z: D/2 - 2.15 }, 0.05, Math.PI / 1); // kiri
-loadModel('cctv.glb', { x: W/2 - 2.5, y: H - 0.02, z: D/2 - 2.15 }, 0.05, Math.PI / 1); // kanan
+loadModel('cctv.glb', { x: W/2 - 2.0, y: H - 0.02, z: D/2 - 1.79 }, 0.05, Math.PI / 1);
 
 // Lampu gantung
 const LAMP_Y = 3.5;
@@ -320,7 +327,7 @@ loadModel('mejangaji.glb', {x: -1.5, y: 0.0, z: -3.5}, 0.5, Math.PI);
 loadModel('mic.glb', {x: 2.0, y: 0, z: -4.0}, 1); 
 loadModel('bismillahbisaa.glb', {x: -3.50, y: 0.02, z: 2.30}, 1.20, -Math.PI/2);
 loadModel('etalase2.glb', {x: -3.50, y: 0.01, z: 4.0}, 0.85, Math.PI/2); 
-loadModel('etalase2.glb', {x: -3.50, y: 0.01, z: -3.5}, 0.85, Math.PI/2);  
+loadModel('etalase2.glb', {x: -3.50, y: 0.01, z: -3.5}, 0.85, Math.PI/2);  
 loadModel('kotakamal.glb', {x: 2.50, y: -0.6, z: 4.20}, 3.50, Math.PI/2);
 
 // Render & animate
@@ -332,55 +339,71 @@ sunLight.position.set(5, 10, 5);
 sunLight.castShadow = true;
 scene.add(sunLight);
 
-// PointLight di posisi LAMP_Y (3.5)
-const lampLight = new THREE.PointLight(0xffaa00, 2.0, 10); // intensitas di 2.0
+// PointLight
+const lampLight = new THREE.PointLight(0xffaa00, 2.0, 10); // intensitas
 lampLight.position.set(0, LAMP_Y, 0); 
 scene.add(lampLight);
 
 // status lampu
 let isLampOn = true; 
 const AMBIENT_INTENSITY_ON = 0.7;
-const AMBIENT_INTENSITY_OFF = 0.1; // diturunkan agar seperti gelap
+const AMBIENT_INTENSITY_OFF = 0.1; // agar seperti gelap
 const POINT_INTENSITY_ON = 2.0;
 const POINT_INTENSITY_OFF = 0.0;
 
 // Tombol 'L' (toggle light)
 window.addEventListener('keydown', (event) => {
-    if (event.key.toUpperCase() === 'L') {
-        isLampOn = !isLampOn;
-        console.log(`Lampu di-toggle. Status: ${isLampOn ? 'ON' : 'OFF'}`);
-    }
+    if (event.key.toUpperCase() === 'L') {
+        isLampOn = !isLampOn;
+        console.log(`Lampu di-toggle. Status: ${isLampOn ? 'ON' : 'OFF'}`);
+    }
 });
 
-
 function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
+    requestAnimationFrame(animate);
+    controls.update();
 
-    // Toggle lampu
-    if (isLampOn) {
-        ambientLight.intensity = AMBIENT_INTENSITY_ON;
-        lampLight.intensity = POINT_INTENSITY_ON;
-    } else {
-        ambientLight.intensity = AMBIENT_INTENSITY_OFF;
-        lampLight.intensity = POINT_INTENSITY_OFF;
-    }
+    // Batas panning target
+    const TARGET_X_LIMIT = (W/2) - 1.0;
+    const TARGET_Z_LIMIT = (D/2) - 1.0;
+    const TARGET_Y_LIMIT = H + 0.1; // kunci target di ketinggian balok
+    const Y_MAX_CAMERA = H + 0.1;  // batas maksimal ketinggian kamera
 
-    // Tembok
-    if (camera.position.x > 3.9) camera.position.x = 3.9;
-    if (camera.position.x < -3.9) camera.position.x = -3.9;
-    if (camera.position.z > 4.9) camera.position.z = 4.9; 
-    if (camera.position.z < -4.8) camera.position.z = -4.8; 
-    
-    if (camera.position.y > 6.0) camera.position.y = 6.0; 
-    if (camera.position.y < 0.5) camera.position.y = 0.5;
+    // Mencegah panning ke ujung
+    if (controls.target.x > TARGET_X_LIMIT) controls.target.x = TARGET_X_LIMIT;
+    if (controls.target.x < -TARGET_X_LIMIT) controls.target.x = -TARGET_X_LIMIT;
+    
+    if (controls.target.z > TARGET_Z_LIMIT) controls.target.z = TARGET_Z_LIMIT; 
+    if (controls.target.z < -TARGET_Z_LIMIT) controls.target.z = -TARGET_Z_LIMIT; 
+    
+    // Mencegah rotasi kamera melihat ke atas atap
+    if (controls.target.y > TARGET_Y_LIMIT) controls.target.y = TARGET_Y_LIMIT;
+    if (controls.target.y < 0.5) controls.target.y = 0.5;
 
-    renderer.render(scene, camera);
+    // Toggle lampu
+    if (isLampOn) {
+        ambientLight.intensity = AMBIENT_INTENSITY_ON;
+        lampLight.intensity = POINT_INTENSITY_ON;
+    } else {
+        ambientLight.intensity = AMBIENT_INTENSITY_OFF;
+        lampLight.intensity = POINT_INTENSITY_OFF;
+    }
+
+    // Tembok (membatasi posisi kamera)
+    if (camera.position.x > 3.9) camera.position.x = 3.9;
+    if (camera.position.x < -3.9) camera.position.x = -3.9;
+    if (camera.position.z > 4.9) camera.position.z = 4.9; 
+    if (camera.position.z < -4.8) camera.position.z = -4.8; 
+    
+    if (camera.position.y > Y_MAX_CAMERA) camera.position.y = Y_MAX_CAMERA; 
+    if (camera.position.y < 0.5) camera.position.y = 0.5;
+
+    renderer.render(scene, camera);
 }
 
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 animate();
